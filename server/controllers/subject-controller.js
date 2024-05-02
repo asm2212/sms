@@ -2,7 +2,6 @@ const Subject = require("../models/subjectSchema.js");
 const Teacher = require("../models/teacherSchema.js");
 const Student = require("../models/studentSchema.js");
 
-
 const subjectCreate = async (req, res) => {
   try {
     const subjectsData = req.body.subjects.map((subject) => ({
@@ -31,7 +30,6 @@ const subjectCreate = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 const allSubjects = async (req, res) => {
   try {
@@ -65,7 +63,6 @@ const classSubjects = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 const freeSubjectList = async (req, res) => {
   try {
@@ -102,7 +99,6 @@ const getSubjectDetail = async (req, res) => {
   }
 };
 
-
 const deleteSubject = async (req, res) => {
   try {
     const deletedSubject = await Subject.findByIdAndDelete(req.params.id);
@@ -129,14 +125,15 @@ const deleteSubject = async (req, res) => {
   }
 };
 
-
 const deleteSubjects = async (req, res) => {
   try {
     const deletedSubjects = await Subject.deleteMany({ school: req.params.id });
 
     await Promise.all([
       Teacher.updateMany(
-        { teachSubject: { $in: deletedSubjects.map((subject) => subject._id) } },
+        {
+          teachSubject: { $in: deletedSubjects.map((subject) => subject._id) },
+        },
         { $unset: { teachSubject: "" }, $unset: { teachSubject: null } }
       ),
       Student.updateMany({}, { $set: { examResult: null, attendance: null } }),
@@ -149,7 +146,6 @@ const deleteSubjects = async (req, res) => {
   }
 };
 
-
 const deleteSubjectsByClass = async (req, res) => {
   try {
     const deletedSubjects = await Subject.deleteMany({
@@ -158,7 +154,9 @@ const deleteSubjectsByClass = async (req, res) => {
 
     await Promise.all([
       Teacher.updateMany(
-        { teachSubject: { $in: deletedSubjects.map((subject) => subject._id) } },
+        {
+          teachSubject: { $in: deletedSubjects.map((subject) => subject._id) },
+        },
         { $unset: { teachSubject: "" }, $unset: { teachSubject: null } }
       ),
       Student.updateMany({}, { $set: { examResult: null, attendance: null } }),
