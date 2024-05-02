@@ -1,6 +1,10 @@
 const Complain = require('../models/complainSchema.js');
 
-
+/**
+ * Create a new complain.
+ * @param {Object} req - Request object.
+ * @param {Object} res - Response object.
+ */
 const createComplain = async (req, res) => {
     try {
         const newComplain = new Complain(req.body);
@@ -12,7 +16,11 @@ const createComplain = async (req, res) => {
     }
 };
 
-
+/**
+ * Get list of complains for a specific school.
+ * @param {Object} req - Request object.
+ * @param {Object} res - Response object.
+ */
 const listComplains = async (req, res) => {
     try {
         const complains = await Complain.find({ school: req.params.id }).populate("user", "name");
