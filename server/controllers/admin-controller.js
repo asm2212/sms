@@ -6,7 +6,6 @@ const adminRegister = async (req, res) => {
         const { email, password, schoolName } = req.body;
         const existingAdminByEmail = await Admin.findOne({ email });
         const existingSchool = await Admin.findOne({ schoolName });
-
         if (existingAdminByEmail) {
             return res.status(400).json({ message: 'Email already exists' });
         }
@@ -41,7 +40,6 @@ const adminLogIn = async (req, res) => {
         if (!admin) {
             return res.status(404).json({ message: 'User not found' });
         }
-
         const validPassword = await bcrypt.compare(password, admin.password);
 
         if (!validPassword) {

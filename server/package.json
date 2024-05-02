@@ -1,12 +1,12 @@
 {
-  "name": "y",
+  "name": "sms",
   "version": "1.0.0",
   "description": "sms",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node index.js",
-    "start": "nodemon index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "author": "asmare",
   "license": "MIT",
