@@ -41,7 +41,7 @@ const ChooseUser = ({ visitor }) => {
     else if (user === "Student") {
       if (visitor === "guest") {
         const rollNum = "1"
-        const studentName = "Dipesh Awasthi"
+        const studentName = "asmare admasu"
         const fields = { rollNum, studentName, password }
         setLoader(true)
         dispatch(loginUser(fields, user))
@@ -53,7 +53,7 @@ const ChooseUser = ({ visitor }) => {
 
     else if (user === "Teacher") {
       if (visitor === "guest") {
-        const email = "tony@12"
+        const email = "asmadm2212@gmail.com"
         const fields = { email, password }
         setLoader(true)
         dispatch(loginUser(fields, user))
