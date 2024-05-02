@@ -2,97 +2,103 @@ const Subject = require("../models/subjectSchema.js");
 const Teacher = require("../models/teacherSchema.js");
 const Student = require("../models/studentSchema.js");
 
+
 const subjectCreate = async (req, res) => {
   try {
-    const subjects = req.body.subjects.map((subject) => ({
+    const subjectsData = req.body.subjects.map((subject) => ({
       subName: subject.subName,
       subCode: subject.subCode,
       sessions: subject.sessions,
+      sclassName: req.body.sclassName,
+      school: req.body.adminID,
     }));
 
     const existingSubjectBySubCode = await Subject.findOne({
-      "subjects.subCode": subjects[0].subCode,
+      "subjects.subCode": subjectsData[0].subCode,
       school: req.body.adminID,
     });
 
     if (existingSubjectBySubCode) {
-      res.send({
-        message: "Sorry this subcode must be unique as it already exists",
+      return res.status(400).json({
+        message: "Sorry, this subcode must be unique as it already exists",
       });
-    } else {
-      const newSubjects = subjects.map((subject) => ({
-        ...subject,
-        sclassName: req.body.sclassName,
-        school: req.body.adminID,
-      }));
-
-      const result = await Subject.insertMany(newSubjects);
-      res.send(result);
     }
-  } catch (err) {
-    res.status(500).json(err);
+
+    const createdSubjects = await Subject.insertMany(subjectsData);
+    res.json(createdSubjects);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
+
 const allSubjects = async (req, res) => {
   try {
-    let subjects = await Subject.find({ school: req.params.id }).populate(
+    const subjects = await Subject.find({ school: req.params.id }).populate(
       "sclassName",
       "sclassName"
     );
-    if (subjects.length > 0) {
-      res.send(subjects);
-    } else {
-      res.send({ message: "No subjects found" });
+
+    if (subjects.length === 0) {
+      return res.json({ message: "No subjects found" });
     }
-  } catch (err) {
-    res.status(500).json(err);
+
+    res.json(subjects);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 const classSubjects = async (req, res) => {
   try {
-    let subjects = await Subject.find({ sclassName: req.params.id });
-    if (subjects.length > 0) {
-      res.send(subjects);
-    } else {
-      res.send({ message: "No subjects found" });
+    const subjects = await Subject.find({ sclassName: req.params.id });
+
+    if (subjects.length === 0) {
+      return res.json({ message: "No subjects found" });
     }
-  } catch (err) {
-    res.status(500).json(err);
+
+    res.json(subjects);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 
 const freeSubjectList = async (req, res) => {
   try {
-    let subjects = await Subject.find({
+    const subjects = await Subject.find({
       sclassName: req.params.id,
       teacher: { $exists: false },
     });
-    if (subjects.length > 0) {
-      res.send(subjects);
-    } else {
-      res.send({ message: "No subjects found" });
+
+    if (subjects.length === 0) {
+      return res.json({ message: "No subjects found" });
     }
-  } catch (err) {
-    res.status(500).json(err);
+
+    res.json(subjects);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-
 const getSubjectDetail = async (req, res) => {
   try {
-    let subject = await Subject.findById(req.params.id);
-    if (subject) {
-      subject = await subject.populate("sclassName", "sclassName");
-      subject = await subject.populate("teacher", "name");
-      res.send(subject);
-    } else {
-      res.send({ message: "No subject found" });
+    const subject = await Subject.findById(req.params.id)
+      .populate("sclassName", "sclassName")
+      .populate("teacher", "name");
+
+    if (!subject) {
+      return res.json({ message: "No subject found" });
     }
-  } catch (err) {
-    res.status(500).json(err);
+
+    res.json(subject);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -100,60 +106,68 @@ const getSubjectDetail = async (req, res) => {
 const deleteSubject = async (req, res) => {
   try {
     const deletedSubject = await Subject.findByIdAndDelete(req.params.id);
-    await Teacher.updateOne(
-      { teachSubject: deletedSubject._id },
-      { $unset: { teachSubject: "" }, $unset: { teachSubject: null } }
-    );
-    await Student.updateMany(
-      {},
-      { $pull: { examResult: { subName: deletedSubject._id } } }
-    );
-    await Student.updateMany(
-      {},
-      { $pull: { attendance: { subName: deletedSubject._id } } }
-    );
 
-    res.send(deletedSubject);
+    await Promise.all([
+      Teacher.updateOne(
+        { teachSubject: deletedSubject._id },
+        { $unset: { teachSubject: "" }, $unset: { teachSubject: null } }
+      ),
+      Student.updateMany(
+        {},
+        { $pull: { examResult: { subName: deletedSubject._id } } }
+      ),
+      Student.updateMany(
+        {},
+        { $pull: { attendance: { subName: deletedSubject._id } } }
+      ),
+    ]);
+
+    res.json(deletedSubject);
   } catch (error) {
-    res.status(500).json(error);
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 const deleteSubjects = async (req, res) => {
   try {
     const deletedSubjects = await Subject.deleteMany({ school: req.params.id });
-    await Teacher.updateMany(
-      { teachSubject: { $in: deletedSubjects.map((subject) => subject._id) } },
-      { $unset: { teachSubject: "" }, $unset: { teachSubject: null } }
-    );
-    await Student.updateMany(
-      {},
-      { $set: { examResult: null, attendance: null } }
-    );
 
-    res.send(deletedSubjects);
+    await Promise.all([
+      Teacher.updateMany(
+        { teachSubject: { $in: deletedSubjects.map((subject) => subject._id) } },
+        { $unset: { teachSubject: "" }, $unset: { teachSubject: null } }
+      ),
+      Student.updateMany({}, { $set: { examResult: null, attendance: null } }),
+    ]);
+
+    res.json(deletedSubjects);
   } catch (error) {
-    res.status(500).json(error);
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 const deleteSubjectsByClass = async (req, res) => {
   try {
     const deletedSubjects = await Subject.deleteMany({
       sclassName: req.params.id,
     });
-    await Teacher.updateMany(
-      { teachSubject: { $in: deletedSubjects.map((subject) => subject._id) } },
-      { $unset: { teachSubject: "" }, $unset: { teachSubject: null } }
-    );
-    await Student.updateMany(
-      {},
-      { $set: { examResult: null, attendance: null } }
-    );
 
-    res.send(deletedSubjects);
+    await Promise.all([
+      Teacher.updateMany(
+        { teachSubject: { $in: deletedSubjects.map((subject) => subject._id) } },
+        { $unset: { teachSubject: "" }, $unset: { teachSubject: null } }
+      ),
+      Student.updateMany({}, { $set: { examResult: null, attendance: null } }),
+    ]);
+
+    res.json(deletedSubjects);
   } catch (error) {
-    res.status(500).json(error);
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 

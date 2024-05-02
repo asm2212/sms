@@ -8,81 +8,94 @@ const teacherRegister = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPass = await bcrypt.hash(password, salt);
 
-        const teacher = new Teacher({ name, email, password: hashedPass, role, school, teachSubject, teachSclass });
-
         const existingTeacherByEmail = await Teacher.findOne({ email });
 
         if (existingTeacherByEmail) {
-            res.send({ message: 'Email already exists' });
+            return res.status(400).json({ message: 'Email already exists' });
         }
-        else {
-            let result = await teacher.save();
-            await Subject.findByIdAndUpdate(teachSubject, { teacher: teacher._id });
-            result.password = undefined;
-            res.send(result);
-        }
+
+        const teacher = new Teacher({ name, email, password: hashedPass, role, school, teachSubject, teachSclass });
+        let result = await teacher.save();
+
+        await Subject.findByIdAndUpdate(teachSubject, { teacher: teacher._id });
+
+        result.password = undefined;
+        res.json(result);
     } catch (err) {
-        res.status(500).json(err);
+        console.error(err);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 
+
 const teacherLogIn = async (req, res) => {
     try {
-        let teacher = await Teacher.findOne({ email: req.body.email });
-        if (teacher) {
-            const validated = await bcrypt.compare(req.body.password, teacher.password);
-            if (validated) {
-                teacher = await teacher.populate("teachSubject", "subName sessions")
-                teacher = await teacher.populate("school", "schoolName")
-                teacher = await teacher.populate("teachSclass", "sclassName")
-                teacher.password = undefined;
-                res.send(teacher);
-            } else {
-                res.send({ message: "Invalid password" });
-            }
-        } else {
-            res.send({ message: "Teacher not found" });
+        const { email, password } = req.body;
+        const teacher = await Teacher.findOne({ email });
+
+        if (!teacher) {
+            return res.status(404).json({ message: 'Teacher not found' });
         }
+
+        const validated = await bcrypt.compare(password, teacher.password);
+        if (!validated) {
+            return res.status(401).json({ message: 'Invalid password' });
+        }
+
+        teacher.teachSubject = await teacher.teachSubject.populate("subName sessions").execPopulate();
+        teacher.school = await teacher.school.populate("schoolName").execPopulate();
+        teacher.teachSclass = await teacher.teachSclass.populate("sclassName").execPopulate();
+
+        teacher.password = undefined;
+        res.json(teacher);
     } catch (err) {
-        res.status(500).json(err);
+        console.error(err);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 
 const getTeachers = async (req, res) => {
     try {
         let teachers = await Teacher.find({ school: req.params.id })
             .populate("teachSubject", "subName")
             .populate("teachSclass", "sclassName");
-        if (teachers.length > 0) {
-            let modifiedTeachers = teachers.map((teacher) => {
-                return { ...teacher._doc, password: undefined };
-            });
-            res.send(modifiedTeachers);
-        } else {
-            res.send({ message: "No teachers found" });
+
+        if (teachers.length === 0) {
+            return res.json({ message: "No teachers found" });
         }
+
+        let modifiedTeachers = teachers.map((teacher) => {
+            return { ...teacher._doc, password: undefined };
+        });
+
+        res.json(modifiedTeachers);
     } catch (err) {
-        res.status(500).json(err);
+        console.error(err);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 
 const getTeacherDetail = async (req, res) => {
     try {
         let teacher = await Teacher.findById(req.params.id)
             .populate("teachSubject", "subName sessions")
             .populate("school", "schoolName")
-            .populate("teachSclass", "sclassName")
-        if (teacher) {
-            teacher.password = undefined;
-            res.send(teacher);
+            .populate("teachSclass", "sclassName");
+
+        if (!teacher) {
+            return res.json({ message: "No teacher found" });
         }
-        else {
-            res.send({ message: "No teacher found" });
-        }
+
+        teacher.password = undefined;
+        res.json(teacher);
     } catch (err) {
-        res.status(500).json(err);
+        console.error(err);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
-}
+};
+
 
 const updateTeacherSubject = async (req, res) => {
     const { teacherId, teachSubject } = req.body;
@@ -95,11 +108,13 @@ const updateTeacherSubject = async (req, res) => {
 
         await Subject.findByIdAndUpdate(teachSubject, { teacher: updatedTeacher._id });
 
-        res.send(updatedTeacher);
+        res.json(updatedTeacher);
     } catch (error) {
-        res.status(500).json(error);
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 
 const deleteTeacher = async (req, res) => {
     try {
@@ -110,11 +125,13 @@ const deleteTeacher = async (req, res) => {
             { $unset: { teacher: 1 } }
         );
 
-        res.send(deletedTeacher);
+        res.json(deletedTeacher);
     } catch (error) {
-        res.status(500).json(error);
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 
 const deleteTeachers = async (req, res) => {
     try {
@@ -123,8 +140,7 @@ const deleteTeachers = async (req, res) => {
         const deletedCount = deletionResult.deletedCount || 0;
 
         if (deletedCount === 0) {
-            res.send({ message: "No teachers found to delete" });
-            return;
+            return res.json({ message: "No teachers found to delete" });
         }
 
         const deletedTeachers = await Teacher.find({ school: req.params.id });
@@ -134,11 +150,13 @@ const deleteTeachers = async (req, res) => {
             { $unset: { teacher: "" }, $unset: { teacher: null } }
         );
 
-        res.send(deletionResult);
+        res.json(deletionResult);
     } catch (error) {
-        res.status(500).json(error);
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 
 const deleteTeachersByClass = async (req, res) => {
     try {
@@ -147,8 +165,7 @@ const deleteTeachersByClass = async (req, res) => {
         const deletedCount = deletionResult.deletedCount || 0;
 
         if (deletedCount === 0) {
-            res.send({ message: "No teachers found to delete" });
-            return;
+            return res.json({ message: "No teachers found to delete" });
         }
 
         const deletedTeachers = await Teacher.find({ sclassName: req.params.id });
@@ -158,11 +175,13 @@ const deleteTeachersByClass = async (req, res) => {
             { $unset: { teacher: "" }, $unset: { teacher: null } }
         );
 
-        res.send(deletionResult);
+        res.json(deletionResult);
     } catch (error) {
-        res.status(500).json(error);
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 
 const teacherAttendance = async (req, res) => {
     const { status, date } = req.body;
@@ -171,7 +190,7 @@ const teacherAttendance = async (req, res) => {
         const teacher = await Teacher.findById(req.params.id);
 
         if (!teacher) {
-            return res.send({ message: 'Teacher not found' });
+            return res.json({ message: 'Teacher not found' });
         }
 
         const existingAttendance = teacher.attendance.find(
@@ -186,11 +205,13 @@ const teacherAttendance = async (req, res) => {
         }
 
         const result = await teacher.save();
-        return res.send(result);
+        return res.json(result);
     } catch (error) {
-        res.status(500).json(error)
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 
 module.exports = {
     teacherRegister,
