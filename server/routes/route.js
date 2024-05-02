@@ -16,8 +16,8 @@ const {
 } = require("../controllers/class-controller.js");
 
 const {
-  complainCreate,
-  complainList,
+  createComplain,
+  listComplains,
 } = require("../controllers/complain-controller.js");
 
 const {
@@ -106,8 +106,8 @@ router.delete("/Notice/:id", deleteNotice);
 router.put("/Notice/:id", updateNotice);
 
 
-router.post("/ComplainCreate", complainCreate);
-router.get("/ComplainList/:id", complainList);
+router.post("/ComplainCreate", createComplain);
+router.get("/ComplainList/:id", listComplains);
 
 
 router.post("/SclassCreate", sclassCreate);

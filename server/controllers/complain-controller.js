@@ -1,26 +1,30 @@
 const Complain = require('../models/complainSchema.js');
 
-const complainCreate = async (req, res) => {
+
+const createComplain = async (req, res) => {
     try {
-        const complain = new Complain(req.body)
-        const result = await complain.save()
-        res.send(result)
-    } catch (err) {
-        res.status(500).json(err);
+        const newComplain = new Complain(req.body);
+        const result = await newComplain.save();
+        res.status(201).json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 
-const complainList = async (req, res) => {
+
+const listComplains = async (req, res) => {
     try {
-        let complains = await Complain.find({ school: req.params.id }).populate("user", "name");
+        const complains = await Complain.find({ school: req.params.id }).populate("user", "name");
         if (complains.length > 0) {
-            res.send(complains)
+            res.json(complains);
         } else {
-            res.send({ message: "No complains found" });
+            res.status(404).json({ message: "No complains found" });
         }
-    } catch (err) {
-        res.status(500).json(err);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 
-module.exports = { complainCreate, complainList };
+module.exports = { createComplain, listComplains };
