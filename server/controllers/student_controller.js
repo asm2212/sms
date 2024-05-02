@@ -14,7 +14,7 @@ const studentRegister = async (req, res) => {
         });
 
         if (existingStudent) {
-            res.send({ message: 'Roll Number already exists' });
+            res.send({ message: 'student already exists' });
         }
         else {
             const student = new Student({
@@ -91,12 +91,13 @@ const getStudentDetail = async (req, res) => {
     }
 }
 
-const deleteStudent = async (req, res) => {
-    try {
-        const result = await Student.findByIdAndDelete(req.params.id)
-        res.send(result)
-    } catch (error) {
-        res.status(500).json(err);
+
+const deleteStudent = async(req,res) => {
+    try{
+        const result =  await Student.findByIdAndDelete(req.params.id);
+        res.send(result);
+    }catch(error){
+        res.status(500).json(error);
     }
 }
 
@@ -191,7 +192,7 @@ const studentAttendance = async (req, res) => {
         if (existingAttendance) {
             existingAttendance.status = status;
         } else {
-            // Check if the student has already attended the maximum number of sessions
+            
             const attendedSessions = student.attendance.filter(
                 (a) => a.subName.toString() === subName
             ).length;
@@ -239,9 +240,9 @@ const clearAllStudentsAttendance = async (req, res) => {
     }
 };
 
-const removeStudentAttendanceBySubject = async (req, res) => {
+const removeStudentAttendanceBySubject = async(req,res)=>{
     const studentId = req.params.id;
-    const subName = req.body.subId
+    const subName = req.body.subId;
 
     try {
         const result = await Student.updateOne(
@@ -250,11 +251,12 @@ const removeStudentAttendanceBySubject = async (req, res) => {
         );
 
         return res.send(result);
+        
     } catch (error) {
         res.status(500).json(error);
+        
     }
-};
-
+}
 
 const removeStudentAttendance = async (req, res) => {
     const studentId = req.params.id;
