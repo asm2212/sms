@@ -180,15 +180,12 @@ const studentAttendance = async (req, res) => {
         if (!student) {
             return res.send({ message: 'Student not found' });
         }
-
         const subject = await Subject.findById(subName);
-
         const existingAttendance = student.attendance.find(
             (a) =>
                 a.date.toDateString() === new Date(date).toDateString() &&
                 a.subName.toString() === subName
         );
-
         if (existingAttendance) {
             existingAttendance.status = status;
         } else {
@@ -285,7 +282,6 @@ module.exports = {
     studentAttendance,
     deleteStudentsByClass,
     updateExamResult,
-
     clearAllStudentsAttendanceBySubject,
     clearAllStudentsAttendance,
     removeStudentAttendanceBySubject,

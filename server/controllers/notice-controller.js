@@ -26,6 +26,7 @@ const noticeList = async (req, res) => {
     }
 };
 
+
 const updateNotice = async (req, res) => {
     try {
         const result = await Notice.findByIdAndUpdate(req.params.id,
