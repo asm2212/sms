@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Container, Grid, Box, Button } from '@mui/material';
+import { Container, Grid, Box, Button, Paper } from '@mui/material';
 import styled from 'styled-components';
 import Students from "../assets/students.svg";
 import { LightPurpleButton } from '../components/buttonStyles';
@@ -10,15 +10,13 @@ const Homepage = () => {
         <StyledContainer>
             <Grid container spacing={0}>
                 <Grid item xs={12} md={6}>
-                    <img src={Students} alt="students" style={{ width: '100%' }} />
+                    <StyledImage src={Students} alt="students" />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                    <StyledPaper elevation={3}>
+                    <StyledContentWrapper elevation={3}>
                         <StyledTitle>
-                            Welcome to
-                            <br />
-                            School Management
-                            <br />
+                            Welcome to<br />
+                            School Management<br />
                             System
                         </StyledTitle>
                         <StyledText>
@@ -33,20 +31,18 @@ const Homepage = () => {
                                 </LightPurpleButton>
                             </StyledLink>
                             <StyledLink to="/chooseasguest">
-                                <Button variant="outlined" fullWidth
-                                    sx={{ mt: 2, mb: 3, color: "#7f56da", borderColor: "#7f56da" }}
-                                >
+                                <Button variant="outlined" fullWidth>
                                     Login as Guest
                                 </Button>
                             </StyledLink>
                             <StyledText>
                                 Don't have an account?{' '}
-                                <Link to="/Adminregister" style={{color:"#550080"}}>
+                                <StyledLink to="/Adminregister">
                                     Sign up
-                                </Link>
+                                </StyledLink>
                             </StyledText>
                         </StyledBox>
-                    </StyledPaper>
+                    </StyledContentWrapper>
                 </Grid>
             </Grid>
         </StyledContainer>
@@ -62,7 +58,7 @@ const StyledContainer = styled(Container)`
   height: 100vh;
 `;
 
-const StyledPaper = styled.div`
+const StyledContentWrapper = styled(Paper)`
   padding: 24px;
   height: 100vh;
 `;
@@ -79,21 +75,19 @@ const StyledBox = styled(Box)`
 const StyledTitle = styled.h1`
   font-size: 3rem;
   color: #252525;
-  /* font-family: "Manrope"; */
   font-weight: bold;
   padding-top: 0;
-  letter-spacing: normal;
-  line-height: normal;
 `;
 
 const StyledText = styled.p`
-  /* color: #550080; */
   margin-top: 30px;
   margin-bottom: 30px; 
-  letter-spacing: normal;
-  line-height: normal;
 `;
 
 const StyledLink = styled(Link)`
   text-decoration: none;
+`;
+
+const StyledImage = styled.img`
+  width: 100%;
 `;
