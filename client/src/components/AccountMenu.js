@@ -4,21 +4,27 @@ import { Settings, Logout } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
+// AccountMenu component
 const AccountMenu = () => {
+    // State variables
     const [anchorEl, setAnchorEl] = useState(null);
-
     const open = Boolean(anchorEl);
 
+    // Redux state
     const { currentRole, currentUser } = useSelector(state => state.user);
 
+    // Click handlers
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
     const handleClose = () => {
         setAnchorEl(null);
     };
+
+    // JSX rendering
     return (
         <>
+            {/* Account icon */}
             <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
                 <Tooltip title="Account settings">
                     <IconButton
@@ -35,6 +41,7 @@ const AccountMenu = () => {
                     </IconButton>
                 </Tooltip>
             </Box>
+            {/* Account menu */}
             <Menu
                 anchorEl={anchorEl}
                 id="account-menu"
@@ -48,6 +55,7 @@ const AccountMenu = () => {
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
+                {/* Profile link */}
                 <MenuItem>
                     <Avatar />
                     <Link to={`/${currentRole}/profile`}>
@@ -55,12 +63,14 @@ const AccountMenu = () => {
                     </Link>
                 </MenuItem>
                 <Divider />
+                {/* Settings menu item */}
                 <MenuItem onClick={handleClose}>
                     <ListItemIcon>
                         <Settings fontSize="small" />
                     </ListItemIcon>
                     Settings
                 </MenuItem>
+                {/* Logout menu item */}
                 <MenuItem>
                     <ListItemIcon>
                         <Logout fontSize="small" />
@@ -74,8 +84,9 @@ const AccountMenu = () => {
     );
 }
 
-export default AccountMenu
+export default AccountMenu;
 
+// Styles for the AccountMenu component
 const styles = {
     styledPaper: {
         overflow: 'visible',
