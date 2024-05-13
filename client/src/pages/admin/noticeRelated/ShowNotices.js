@@ -13,25 +13,24 @@ import { GreenButton } from '../../../components/buttonStyles';
 import SpeedDialTemplate from '../../../components/SpeedDialTemplate';
 
 const ShowNotices = () => {
-
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const { noticesList, loading, error, response } = useSelector((state) => state.notice);
-    const { currentUser } = useSelector(state => state.user)
+    const { currentUser } = useSelector(state => state.user);
 
     useEffect(() => {
         dispatch(getAllNotices(currentUser._id, "Notice"));
     }, [currentUser._id, dispatch]);
 
-    if (error) {
-        console.log(error);
-    }
-
     const deleteHandler = (deleteID, address) => {
         dispatch(deleteUser(deleteID, address))
             .then(() => {
                 dispatch(getAllNotices(currentUser._id, "Notice"));
-            })
+            });
+    };
+
+    if (error) {
+        console.log(error);
     }
 
     const noticeColumns = [
@@ -40,7 +39,7 @@ const ShowNotices = () => {
         { id: 'date', label: 'Date', minWidth: 170 },
     ];
 
-    const noticeRows = noticesList && noticesList.length > 0 && noticesList.map((notice) => {
+    const noticeRows = noticesList?.map((notice) => {
         const date = new Date(notice.date);
         const dateString = date.toString() !== "Invalid Date" ? date.toISOString().substring(0, 10) : "Invalid Date";
         return {
@@ -51,15 +50,11 @@ const ShowNotices = () => {
         };
     });
 
-    const NoticeButtonHaver = ({ row }) => {
-        return (
-            <>
-                <IconButton onClick={() => deleteHandler(row.id, "Notice")}>
-                    <DeleteIcon color="error" />
-                </IconButton>
-            </>
-        );
-    };
+    const NoticeButtonHaver = ({ row }) => (
+        <IconButton onClick={() => deleteHandler(row.id, "Notice")}>
+            <DeleteIcon color="error" />
+        </IconButton>
+    );
 
     const actions = [
         {
@@ -74,27 +69,26 @@ const ShowNotices = () => {
 
     return (
         <>
-            {loading ?
+            {loading ? (
                 <div>Loading...</div>
-                :
+            ) : (
                 <>
-                    {response ?
+                    {response ? (
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-                            <GreenButton variant="contained"
-                                onClick={() => navigate("/Admin/addnotice")}>
+                            <GreenButton variant="contained" onClick={() => navigate("/Admin/addnotice")}>
                                 Add Notice
                             </GreenButton>
                         </Box>
-                        :
+                    ) : (
                         <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-                            {Array.isArray(noticesList) && noticesList.length > 0 &&
+                            {noticesList?.length > 0 && (
                                 <TableTemplate buttonHaver={NoticeButtonHaver} columns={noticeColumns} rows={noticeRows} />
-                            }
+                            )}
                             <SpeedDialTemplate actions={actions} />
                         </Paper>
-                    }
+                    )}
                 </>
-            }
+            )}
         </>
     );
 };
