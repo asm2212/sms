@@ -2,15 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '../../../redux/userRelated/userHandle';
-import Popup from '../../../components/Popup';
 import { underControl } from '../../../redux/userRelated/userSlice';
 import { getAllSclasses } from '../../../redux/sclassRelated/sclassHandle';
 import { CircularProgress } from '@mui/material';
+import Popup from '../../../components/Popup';
 
 const AddStudent = ({ situation }) => {
-    const dispatch = useDispatch()
-    const navigate = useNavigate()
-    const params = useParams()
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const params = useParams();
 
     const userState = useSelector(state => state.user);
     const { status, currentUser, response, error } = userState;
@@ -18,13 +18,13 @@ const AddStudent = ({ situation }) => {
 
     const [name, setName] = useState('');
     const [rollNum, setRollNum] = useState('');
-    const [password, setPassword] = useState('')
-    const [className, setClassName] = useState('')
-    const [sclassName, setSclassName] = useState('')
+    const [password, setPassword] = useState('');
+    const [className, setClassName] = useState('');
+    const [sclassName, setSclassName] = useState('');
 
-    const adminID = currentUser._id
-    const role = "Student"
-    const attendance = []
+    const adminID = currentUser._id;
+    const role = "Student";
+    const attendance = [];
 
     useEffect(() => {
         if (situation === "Class") {
@@ -34,7 +34,7 @@ const AddStudent = ({ situation }) => {
 
     const [showPopup, setShowPopup] = useState(false);
     const [message, setMessage] = useState("");
-    const [loader, setLoader] = useState(false)
+    const [loader, setLoader] = useState(false);
 
     useEffect(() => {
         dispatch(getAllSclasses(adminID, "Sclass"));
@@ -51,36 +51,33 @@ const AddStudent = ({ situation }) => {
             setClassName(selectedClass.sclassName);
             setSclassName(selectedClass._id);
         }
-    }
+    };
 
-    const fields = { name, rollNum, password, sclassName, adminID, role, attendance }
+    const fields = { name, rollNum, password, sclassName, adminID, role, attendance };
 
     const submitHandler = (event) => {
-        event.preventDefault()
+        event.preventDefault();
         if (sclassName === "") {
-            setMessage("Please select a classname")
-            setShowPopup(true)
+            setMessage("Please select a classname");
+            setShowPopup(true);
+        } else {
+            setLoader(true);
+            dispatch(registerUser(fields, role));
         }
-        else {
-            setLoader(true)
-            dispatch(registerUser(fields, role))
-        }
-    }
+    };
 
     useEffect(() => {
         if (status === 'added') {
-            dispatch(underControl())
-            navigate(-1)
-        }
-        else if (status === 'failed') {
-            setMessage(response)
-            setShowPopup(true)
-            setLoader(false)
-        }
-        else if (status === 'error') {
-            setMessage("Network Error")
-            setShowPopup(true)
-            setLoader(false)
+            dispatch(underControl());
+            navigate(-1);
+        } else if (status === 'failed') {
+            setMessage(response);
+            setShowPopup(true);
+            setLoader(false);
+        } else if (status === 'error') {
+            setMessage("Network Error");
+            setShowPopup(true);
+            setLoader(false);
         }
     }, [status, navigate, error, response, dispatch]);
 
@@ -95,8 +92,7 @@ const AddStudent = ({ situation }) => {
                         onChange={(event) => setName(event.target.value)}
                         autoComplete="name" required />
 
-                    {
-                        situation === "Student" &&
+                    {situation === "Student" && (
                         <>
                             <label>Class</label>
                             <select
@@ -111,7 +107,7 @@ const AddStudent = ({ situation }) => {
                                 ))}
                             </select>
                         </>
-                    }
+                    )}
 
                     <label>Roll Number</label>
                     <input className="registerInput" type="number" placeholder="Enter student's Roll Number..."
@@ -136,7 +132,7 @@ const AddStudent = ({ situation }) => {
             </div>
             <Popup message={message} setShowPopup={setShowPopup} showPopup={showPopup} />
         </>
-    )
-}
+    );
+};
 
-export default AddStudent
+export default AddStudent;

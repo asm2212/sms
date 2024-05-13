@@ -1,16 +1,13 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Paper, Box, Checkbox
-} from '@mui/material';
+import { Paper, Box, Checkbox } from '@mui/material';
 import { getAllComplains } from '../../../redux/complainRelated/complainHandle';
 import TableTemplate from '../../../components/TableTemplate';
 
 const SeeComplains = () => {
-
-  const label = { inputProps: { 'aria-label': 'Checkbox demo' } };  const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const { complainsList, loading, error, response } = useSelector((state) => state.complain);
-  const { currentUser } = useSelector(state => state.user)
+  const { currentUser } = useSelector(state => state.user);
 
   useEffect(() => {
     dispatch(getAllComplains(currentUser._id, "Complain"));
@@ -40,30 +37,30 @@ const SeeComplains = () => {
   const ComplainButtonHaver = ({ row }) => {
     return (
       <>
-        <Checkbox {...label} />
+        <Checkbox inputProps={{ 'aria-label': 'Checkbox demo' }} />
       </>
     );
   };
 
   return (
     <>
-      {loading ?
+      {loading ? (
         <div>Loading...</div>
-        :
+      ) : (
         <>
-          {response ?
+          {response ? (
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
               No Complains Right Now
             </Box>
-            :
+          ) : (
             <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-              {Array.isArray(complainsList) && complainsList.length > 0 &&
+              {Array.isArray(complainsList) && complainsList.length > 0 && (
                 <TableTemplate buttonHaver={ComplainButtonHaver} columns={complainColumns} rows={complainRows} />
-              }
+              )}
             </Paper>
-          }
+          )}
         </>
-      }
+      )}
     </>
   );
 };
